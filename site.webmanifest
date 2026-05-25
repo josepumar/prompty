@@ -1,0 +1,12 @@
+{
+  "name": "Prompty",
+  "short_name": "Prompty",
+  "description": "Prompt & Snippet Library Manager",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0f1117",
+  "theme_color": "#5c7cfa",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
