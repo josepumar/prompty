@@ -218,20 +218,8 @@ function showForm(prompt = null) {
   document.getElementById('form-description').value = prompt?.description ?? '';
   document.getElementById('form-body').value = prompt?.body ?? '';
 
-  const picker = document.getElementById('form-tags-picker');
-  picker.innerHTML = '';
   const promptTagIds = new Set((prompt?.prompt_tags || []).map(pt => pt.tag_id));
-  tags.forEach(t => {
-    const label = document.createElement('label');
-    label.className = 'tag-picker-item';
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.value = t.id;
-    cb.checked = promptTagIds.has(t.id);
-    label.appendChild(cb);
-    label.appendChild(document.createTextNode(' ' + t.name));
-    picker.appendChild(label);
-  });
+  renderFormTagPicker(promptTagIds);
 
   document.getElementById('form-title').focus();
 }
@@ -240,6 +228,144 @@ function showEmptyState() {
   document.getElementById('empty-state').classList.remove('hidden');
   document.getElementById('prompt-detail').classList.add('hidden');
   document.getElementById('prompt-form').classList.add('hidden');
+}
+
+// ── Inline Tag Picker ──────────────────────────────────
+
+function getCheckedTagIds() {
+  return new Set(
+    [...document.querySelectorAll('#form-tags-picker input[type=checkbox]:checked')]
+      .map(cb => cb.value)
+  );
+}
+
+function renderFormTagPicker(checkedIds) {
+  const picker = document.getElementById('form-tags-picker');
+  picker.innerHTML = '';
+  tags.forEach(t => picker.appendChild(makeTagPickerItem(t, checkedIds.has(t.id))));
+  picker.appendChild(makeTagNewRow(checkedIds));
+}
+
+function makeTagPickerItem(tag, checked) {
+  const wrap = document.createElement('div');
+  wrap.className = 'tag-picker-item-wrap';
+
+  const label = document.createElement('label');
+  label.className = 'tag-picker-item';
+
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.value = tag.id;
+  cb.checked = checked;
+  label.appendChild(cb);
+  label.appendChild(document.createTextNode(' ' + tag.name));
+
+  const editBtn = document.createElement('button');
+  editBtn.type = 'button';
+  editBtn.className = 'tag-picker-edit-btn';
+  editBtn.title = 'Rename tag';
+  editBtn.textContent = '✎';
+  editBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    startInlineRename(wrap, tag, getCheckedTagIds());
+  });
+
+  wrap.appendChild(label);
+  wrap.appendChild(editBtn);
+  return wrap;
+}
+
+function makeTagNewRow(checkedIds) {
+  const row = document.createElement('div');
+  row.className = 'tag-picker-new-row';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'tag-picker-new-input';
+  input.placeholder = '+ New tag…';
+
+  input.addEventListener('keydown', async (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const name = input.value.trim();
+    if (!name) return;
+    try {
+      const newTag = await createTag(name);
+      tags.push(newTag);
+      tags.sort((a, b) => a.name.localeCompare(b.name));
+      checkedIds.add(newTag.id);
+      renderFormTagPicker(checkedIds);
+      renderTagChips();
+    } catch (err) {
+      alert('Could not create tag: ' + err.message);
+    }
+  });
+
+  row.appendChild(input);
+  return row;
+}
+
+function startInlineRename(wrap, tag, checkedIds) {
+  const label = wrap.querySelector('label');
+  const editBtn = wrap.querySelector('.tag-picker-edit-btn');
+  label.style.display = 'none';
+  editBtn.style.display = 'none';
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'tag-rename-input';
+  input.value = tag.name;
+
+  const confirm = document.createElement('button');
+  confirm.type = 'button';
+  confirm.className = 'tag-picker-edit-btn';
+  confirm.title = 'Save';
+  confirm.textContent = '✓';
+  confirm.style.opacity = '1';
+
+  const cancel = document.createElement('button');
+  cancel.type = 'button';
+  cancel.className = 'tag-picker-edit-btn';
+  cancel.title = 'Cancel';
+  cancel.textContent = '✕';
+  cancel.style.opacity = '1';
+
+  wrap.appendChild(input);
+  wrap.appendChild(confirm);
+  wrap.appendChild(cancel);
+  input.focus();
+  input.select();
+
+  async function doSave() {
+    const newName = input.value.trim();
+    if (newName && newName !== tag.name) {
+      try {
+        await renameTag(tag.id, newName);
+        tag.name = newName;
+        renderFormTagPicker(getCheckedTagIds());
+        renderTagChips();
+        return;
+      } catch (err) {
+        alert('Could not rename tag: ' + err.message);
+      }
+    }
+    doCancel();
+  }
+
+  function doCancel() {
+    input.remove();
+    confirm.remove();
+    cancel.remove();
+    label.style.display = '';
+    editBtn.style.display = '';
+  }
+
+  confirm.addEventListener('click', doSave);
+  cancel.addEventListener('click', doCancel);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); doSave(); }
+    if (e.key === 'Escape') { e.preventDefault(); doCancel(); }
+  });
 }
 
 // ── Confirm Dialog ─────────────────────────────────────
