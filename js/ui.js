@@ -463,7 +463,7 @@ function wireEvents() {
   document.getElementById('new-prompt-btn').addEventListener('click', () => showForm());
   document.getElementById('new-prompt-btn-empty').addEventListener('click', () => showForm());
 
-  document.getElementById('copy-btn').addEventListener('click', handleCopy);
+  document.getElementById('compose-btn').addEventListener('click', handleCopy);
   document.getElementById('quick-copy-btn').addEventListener('click', handleQuickCopy);
   document.getElementById('edit-btn').addEventListener('click', () => showForm(selectedPrompt));
   document.getElementById('duplicate-btn').addEventListener('click', handleDuplicate);
