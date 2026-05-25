@@ -292,6 +292,24 @@ function handleCopy() {
   openAssembly(selectedPrompt, affixes);
 }
 
+function handleQuickCopy() {
+  if (!selectedPrompt) return;
+  const prefixes = affixes.filter(a => a.type === 'prefix' && a.is_active).map(a => a.body);
+  const suffixes = affixes.filter(a => a.type === 'suffix' && a.is_active).map(a => a.body);
+  const text = [...prefixes, selectedPrompt.body, ...suffixes].join('\n');
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+
+  const btn = document.getElementById('quick-copy-btn');
+  btn.textContent = '✓';
+  btn.classList.add('copied');
+  setTimeout(() => { btn.textContent = '⎘'; btn.classList.remove('copied'); }, 1200);
+}
+
 // ── Tags Modal ─────────────────────────────────────────
 
 function openTagsModal() {
@@ -446,6 +464,7 @@ function wireEvents() {
   document.getElementById('new-prompt-btn-empty').addEventListener('click', () => showForm());
 
   document.getElementById('copy-btn').addEventListener('click', handleCopy);
+  document.getElementById('quick-copy-btn').addEventListener('click', handleQuickCopy);
   document.getElementById('edit-btn').addEventListener('click', () => showForm(selectedPrompt));
   document.getElementById('duplicate-btn').addEventListener('click', handleDuplicate);
   document.getElementById('delete-btn').addEventListener('click', handleDelete);

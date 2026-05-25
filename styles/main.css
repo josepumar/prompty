@@ -435,6 +435,26 @@ button { cursor: pointer; font-family: inherit; font-size: .875rem; }
   font-size: .73rem;
 }
 
+.detail-body-wrap { position: relative; }
+
+.quick-copy-btn {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.85rem;
+  opacity: 0;
+  transition: opacity .15s, color .15s;
+  z-index: 1;
+}
+.detail-body-wrap:hover .quick-copy-btn { opacity: 1; }
+.quick-copy-btn:hover { color: var(--text); }
+.quick-copy-btn.copied { color: var(--suffix-clr); opacity: 1; }
+
 .detail-body {
   font-family: 'Menlo', 'Consolas', 'Monaco', monospace;
   font-size: .83rem;
