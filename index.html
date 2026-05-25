@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prompty</title>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+  <!-- Setup Screen -->
+  <div id="setup-screen" class="screen hidden">
+    <div class="auth-card">
+      <h1>Prompty Setup</h1>
+      <p class="auth-subtitle">Enter your Supabase project credentials to get started.</p>
+      <form id="setup-form">
+        <div class="form-group">
+          <label for="sb-url">Supabase Project URL</label>
+          <input type="url" id="sb-url" placeholder="https://your-project.supabase.co" required>
+        </div>
+        <div class="form-group">
+          <label for="sb-key">Supabase Anon Key</label>
+          <input type="text" id="sb-key" placeholder="eyJ…" required>
+        </div>
+        <button type="submit" class="btn-primary btn-full">Save &amp; Continue</button>
+        <p id="setup-error" class="error-msg hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Login Screen -->
+  <div id="login-screen" class="screen hidden">
+    <div class="auth-card">
+      <h1>Prompty</h1>
+      <p class="auth-subtitle">Sign in to your prompt library.</p>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" required autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required autocomplete="current-password">
+        </div>
+        <button type="submit" id="login-btn" class="btn-primary btn-full">Sign In</button>
+        <p id="login-error" class="error-msg hidden"></p>
+      </form>
+      <button id="reset-setup-btn" class="btn-ghost btn-full" style="margin-top:.75rem">Reset Setup</button>
+    </div>
+  </div>
+
+  <!-- App Shell -->
+  <div id="app-shell" class="hidden">
+
+    <!-- Left Panel -->
+    <div id="left-panel">
+      <div class="left-top">
+        <div class="app-header">
+          <span class="app-title">Prompty</span>
+          <div class="header-actions">
+            <button id="tags-btn">Tags</button>
+            <button id="logout-btn">Logout</button>
+          </div>
+        </div>
+        <div class="search-wrap">
+          <input type="text" id="search-input" placeholder="Search prompts…">
+        </div>
+        <div id="tag-chips" class="tag-chips"></div>
+      </div>
+
+      <div id="prompt-list" class="prompt-list"></div>
+
+      <div class="affix-drawer">
+        <button class="affix-drawer-toggle" id="affix-toggle">
+          <span>Affixes</span>
+          <span class="toggle-caret">▾</span>
+        </button>
+        <div id="affix-drawer-body" class="affix-drawer-body hidden">
+          <div id="affix-list"></div>
+          <button id="new-affix-btn" class="btn-ghost btn-sm" style="margin-top:.5rem">+ New Affix</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div id="right-panel">
+
+      <!-- Empty state -->
+      <div id="empty-state" class="empty-state">
+        <p>Select a prompt or create a new one.</p>
+        <button id="new-prompt-btn-empty" class="btn-primary">+ New Prompt</button>
+      </div>
+
+      <!-- Detail view -->
+      <div id="prompt-detail" class="hidden panel-view">
+        <div class="panel-toolbar">
+          <div class="toolbar-left">
+            <button id="copy-btn" class="btn-primary">Copy</button>
+            <button id="edit-btn" class="btn-secondary">Edit</button>
+            <button id="duplicate-btn" class="btn-secondary">Duplicate</button>
+            <button id="delete-btn" class="btn-danger">Delete</button>
+          </div>
+          <button id="new-prompt-btn" class="btn-secondary">+ New</button>
+        </div>
+        <div class="panel-content">
+          <h2 id="detail-title"></h2>
+          <p id="detail-description" class="detail-description"></p>
+          <div id="detail-tags" class="detail-tags"></div>
+          <pre id="detail-body" class="detail-body"></pre>
+        </div>
+      </div>
+
+      <!-- Edit / Create form -->
+      <div id="prompt-form" class="hidden panel-view">
+        <div class="panel-toolbar">
+          <div class="toolbar-left">
+            <button id="save-btn" class="btn-primary">Save</button>
+            <button id="cancel-btn" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+        <div class="panel-content">
+          <div class="form-group">
+            <label for="form-title">Title</label>
+            <input type="text" id="form-title" required>
+          </div>
+          <div class="form-group">
+            <label for="form-description">Description</label>
+            <textarea id="form-description" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Tags</label>
+            <div id="form-tags-picker" class="tags-picker"></div>
+          </div>
+          <div class="form-group">
+            <label for="form-body">Body</label>
+            <textarea id="form-body" rows="14" class="mono"></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Assembly Overlay -->
+  <div id="assembly-overlay" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="overlay-card">
+      <div class="overlay-header">
+        <h3>Copy Prompt</h3>
+        <button id="overlay-close" class="overlay-close" aria-label="Close">✕</button>
+      </div>
+      <div class="overlay-body">
+        <div id="affix-toggles" class="affix-toggles"></div>
+        <div id="variable-fields" class="variable-fields"></div>
+        <div class="section-label">Preview</div>
+        <div id="assembly-preview" class="assembly-preview"></div>
+      </div>
+      <div class="overlay-footer">
+        <button id="overlay-copy-btn" class="btn-primary btn-lg">Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tags Modal -->
+  <div id="tags-modal" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="overlay-card overlay-sm">
+      <div class="overlay-header">
+        <h3>Manage Tags</h3>
+        <button id="tags-modal-close" class="overlay-close" aria-label="Close">✕</button>
+      </div>
+      <div class="overlay-body">
+        <div class="new-item-row">
+          <input type="text" id="new-tag-input" placeholder="New tag name…">
+          <button id="add-tag-btn" class="btn-primary">Add</button>
+        </div>
+        <div id="tags-list" class="modal-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Affix Modal -->
+  <div id="affix-modal" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="overlay-card overlay-sm">
+      <div class="overlay-header">
+        <h3 id="affix-modal-title">New Affix</h3>
+        <button id="affix-modal-close" class="overlay-close" aria-label="Close">✕</button>
+      </div>
+      <div class="overlay-body">
+        <div class="form-group">
+          <label for="affix-type">Type</label>
+          <select id="affix-type">
+            <option value="prefix">Prefix</option>
+            <option value="suffix">Suffix</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="affix-name">Name</label>
+          <input type="text" id="affix-name" placeholder="Display name">
+        </div>
+        <div class="form-group">
+          <label for="affix-body">Body</label>
+          <textarea id="affix-body" rows="4" class="mono"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="affix-active">
+            Active by default
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button id="affix-save-btn" class="btn-primary">Save</button>
+          <button id="affix-cancel-btn" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/ui.js"></script>
+</body>
+</html>
