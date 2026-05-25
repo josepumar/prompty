@@ -8,6 +8,27 @@ let searchKeyword = '';
 let editingPromptId = null;
 let editingAffixId = null;
 
+// ── Theme ──────────────────────────────────────────────
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  const icon = theme === 'dark' ? '☀' : '☾';
+  const btn = document.getElementById('theme-btn');
+  const btnLogin = document.getElementById('theme-btn-login');
+  if (btn) btn.textContent = icon;
+  if (btnLogin) btnLogin.textContent = icon;
+  localStorage.setItem('prompty_theme', theme);
+}
+
+function initTheme() {
+  applyTheme(localStorage.getItem('prompty_theme') || 'dark');
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
 // ── Boot ───────────────────────────────────────────────
 
 async function boot() {
@@ -451,6 +472,10 @@ async function handleDeleteAffix(affix) {
 // ── Event Wiring ───────────────────────────────────────
 
 function wireEvents() {
+  initTheme();
+  document.getElementById('theme-btn').addEventListener('click', toggleTheme);
+  document.getElementById('theme-btn-login').addEventListener('click', toggleTheme);
+
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;

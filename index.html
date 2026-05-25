@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prompty</title>
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('prompty_theme')||'dark');</script>
   <link rel="stylesheet" href="styles/main.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
@@ -30,7 +31,8 @@
   </div>
 
   <!-- Login Screen -->
-  <div id="login-screen" class="screen hidden">
+  <div id="login-screen" class="screen hidden" style="position:relative">
+    <button id="theme-btn-login" class="btn-ghost" style="position:absolute;top:1rem;right:1rem;font-size:1.1rem" title="Toggle theme">☀</button>
     <div class="auth-card">
       <h1>Prompty</h1>
       <p class="auth-subtitle">Sign in to your prompt library.</p>
@@ -59,6 +61,7 @@
         <div class="app-header">
           <span class="app-title">Prompty</span>
           <div class="header-actions">
+            <button id="theme-btn" title="Toggle theme">☀</button>
             <button id="tags-btn">Tags</button>
             <button id="logout-btn">Logout</button>
           </div>
