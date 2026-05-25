@@ -1,9 +1,7 @@
-import { extractVariables, fillVariables } from './variables.js';
-
 let _prompt = null;
 let _affixes = [];
 
-export function openAssembly(prompt, affixes) {
+function openAssembly(prompt, affixes) {
   _prompt = prompt;
   _affixes = affixes;
 
@@ -24,20 +22,19 @@ function buildAffixToggles(affixes) {
 
   const prefixes = affixes.filter(a => a.type === 'prefix');
   const suffixes = affixes.filter(a => a.type === 'suffix');
-
   if (prefixes.length === 0 && suffixes.length === 0) return;
 
   if (prefixes.length > 0) {
-    container.appendChild(sectionLabel('Prefixes', 'affix-toggle-section'));
+    container.appendChild(assemblySectionLabel('Prefixes', 'affix-toggle-section'));
     prefixes.forEach(a => container.appendChild(makeToggleRow(a)));
   }
   if (suffixes.length > 0) {
-    container.appendChild(sectionLabel('Suffixes', 'affix-toggle-section'));
+    container.appendChild(assemblySectionLabel('Suffixes', 'affix-toggle-section'));
     suffixes.forEach(a => container.appendChild(makeToggleRow(a)));
   }
 }
 
-function sectionLabel(text, cls) {
+function assemblySectionLabel(text, cls) {
   const el = document.createElement('div');
   el.className = cls;
   el.textContent = text;
@@ -66,7 +63,7 @@ function buildVariableFields(body) {
   const vars = extractVariables(body);
   if (vars.length === 0) return;
 
-  container.appendChild(sectionLabel('Variables', 'section-label'));
+  container.appendChild(assemblySectionLabel('Variables', 'section-label'));
   vars.forEach(v => {
     const row = document.createElement('div');
     row.className = 'var-row';
@@ -136,13 +133,13 @@ function updatePreview() {
   });
 }
 
-export function closeAssembly() {
+function closeAssembly() {
   document.getElementById('assembly-overlay').classList.add('hidden');
   _prompt = null;
   _affixes = [];
 }
 
-export function copyAssembly() {
+function copyAssembly() {
   const { prefixes, body, suffixes } = getAssemblyParts();
   const text = [...prefixes, body, ...suffixes].join('\n');
 

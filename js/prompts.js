@@ -1,6 +1,4 @@
-import { getSupabase } from './supabase-client.js';
-
-export async function fetchPrompts() {
+async function fetchPrompts() {
   const { data, error } = await getSupabase()
     .from('prompts')
     .select('id, title, body, description, created_at, updated_at, prompt_tags(tag_id)')
@@ -9,7 +7,7 @@ export async function fetchPrompts() {
   return data;
 }
 
-export async function createPrompt({ title, body, description, tagIds = [] }) {
+async function createPrompt({ title, body, description, tagIds = [] }) {
   const sb = getSupabase();
   const { data, error } = await sb
     .from('prompts')
@@ -26,12 +24,9 @@ export async function createPrompt({ title, body, description, tagIds = [] }) {
   return data;
 }
 
-export async function updatePrompt(id, { title, body, description, tagIds = [] }) {
+async function updatePrompt(id, { title, body, description, tagIds = [] }) {
   const sb = getSupabase();
-  const { error } = await sb
-    .from('prompts')
-    .update({ title, body, description })
-    .eq('id', id);
+  const { error } = await sb.from('prompts').update({ title, body, description }).eq('id', id);
   if (error) throw error;
 
   const { error: delErr } = await sb.from('prompt_tags').delete().eq('prompt_id', id);
@@ -45,15 +40,14 @@ export async function updatePrompt(id, { title, body, description, tagIds = [] }
   }
 }
 
-export async function deletePrompt(id) {
+async function deletePrompt(id) {
   const { error } = await getSupabase().from('prompts').delete().eq('id', id);
   if (error) throw error;
 }
 
-export async function duplicatePrompt(prompt) {
+async function duplicatePrompt(prompt) {
   const sb = getSupabase();
 
-  // Parse existing ##NN or ##NN.M suffix
   const m = prompt.title.match(/^(.*?)\s*##(\d+)(?:\.\d+)?$/);
   let base, nn;
   if (m) {
@@ -66,22 +60,15 @@ export async function duplicatePrompt(prompt) {
 
   let candidate = `${base} ##${String(nn).padStart(2, '0')}`;
 
-  // Check DB for collision
   const { data: exists } = await sb
-    .from('prompts')
-    .select('id')
-    .eq('title', candidate)
-    .maybeSingle();
+    .from('prompts').select('id').eq('title', candidate).maybeSingle();
 
   if (exists) {
     let sub = 1;
     while (true) {
       const subCandidate = `${candidate}.${sub}`;
       const { data: subExists } = await sb
-        .from('prompts')
-        .select('id')
-        .eq('title', subCandidate)
-        .maybeSingle();
+        .from('prompts').select('id').eq('title', subCandidate).maybeSingle();
       if (!subExists) { candidate = subCandidate; break; }
       sub++;
     }

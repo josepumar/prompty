@@ -1,4 +1,4 @@
-export function filterPrompts(prompts, keyword, selectedTagIds) {
+function filterPrompts(prompts, keyword, selectedTagIds) {
   let result = prompts;
 
   if (keyword) {

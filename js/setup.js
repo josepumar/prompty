@@ -1,6 +1,4 @@
-import { initSupabase } from './supabase-client.js';
-
-export function mountSetup(onComplete) {
+function mountSetup(onComplete) {
   const form = document.getElementById('setup-form');
   const errorEl = document.getElementById('setup-error');
 

@@ -1,12 +1,3 @@
-import { isConfigured, resetConfig } from './supabase-client.js';
-import { mountSetup } from './setup.js';
-import { getSession, login, logout, onAuthStateChange } from './auth.js';
-import { fetchPrompts, createPrompt, updatePrompt, deletePrompt, duplicatePrompt } from './prompts.js';
-import { fetchAffixes, createAffix, updateAffix, deleteAffix } from './affixes.js';
-import { fetchTags, createTag, renameTag, deleteTag } from './tags.js';
-import { filterPrompts } from './search.js';
-import { openAssembly, closeAssembly, copyAssembly } from './assembly.js';
-
 // ── State ──────────────────────────────────────────────
 let prompts = [];
 let affixes = [];
@@ -31,10 +22,7 @@ async function boot() {
 async function afterSetup() {
   try {
     const session = await getSession();
-    if (!session) {
-      showScreen('login-screen');
-      return;
-    }
+    if (!session) { showScreen('login-screen'); return; }
     await loadApp();
   } catch {
     showScreen('login-screen');
@@ -52,7 +40,7 @@ async function loadApp() {
 
 async function loadPrompts() { prompts = await fetchPrompts(); }
 async function loadAffixes() { affixes = await fetchAffixes(); }
-async function loadTags() { tags = await fetchTags(); }
+async function loadTags()    { tags    = await fetchTags(); }
 
 // ── Screens ────────────────────────────────────────────
 
@@ -83,7 +71,6 @@ function renderPromptList() {
   filtered.forEach(p => {
     const item = document.createElement('div');
     item.className = 'prompt-item' + (selectedPrompt?.id === p.id ? ' active' : '');
-    item.dataset.id = p.id;
 
     const title = document.createElement('div');
     title.className = 'prompt-item-title';
@@ -115,9 +102,6 @@ function renderTagChips() {
 function renderAffixDrawer() {
   const list = document.getElementById('affix-list');
   list.innerHTML = '';
-
-  const prefixes = affixes.filter(a => a.type === 'prefix');
-  const suffixes = affixes.filter(a => a.type === 'suffix');
 
   function renderGroup(group, label) {
     if (group.length === 0) return;
@@ -167,11 +151,11 @@ function renderAffixDrawer() {
     });
   }
 
-  renderGroup(prefixes, 'Prefixes');
-  renderGroup(suffixes, 'Suffixes');
+  renderGroup(affixes.filter(a => a.type === 'prefix'), 'Prefixes');
+  renderGroup(affixes.filter(a => a.type === 'suffix'), 'Suffixes');
 }
 
-// ── Selection & Detail ─────────────────────────────────
+// ── Selection & Views ──────────────────────────────────
 
 function selectPrompt(prompt) {
   selectedPrompt = prompt;
@@ -190,9 +174,8 @@ function showDetail() {
 
   const tagsEl = document.getElementById('detail-tags');
   tagsEl.innerHTML = '';
-  const promptTagIds = (selectedPrompt.prompt_tags || []).map(pt => pt.tag_id);
-  promptTagIds.forEach(tid => {
-    const tag = tags.find(t => t.id === tid);
+  (selectedPrompt.prompt_tags || []).forEach(pt => {
+    const tag = tags.find(t => t.id === pt.tag_id);
     if (!tag) return;
     const badge = document.createElement('span');
     badge.className = 'tag-badge';
@@ -266,8 +249,7 @@ async function handleSave() {
     }
     editingPromptId = null;
     renderAll();
-    if (selectedPrompt) showDetail();
-    else showEmptyState();
+    if (selectedPrompt) showDetail(); else showEmptyState();
   } catch (err) {
     alert('Save failed: ' + err.message);
   }
@@ -419,7 +401,6 @@ async function handleDeleteAffix(affix) {
 // ── Event Wiring ───────────────────────────────────────
 
 function wireEvents() {
-  // Login form
   document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('login-email').value;
@@ -442,50 +423,41 @@ function wireEvents() {
     }
   });
 
-  // Reset setup
   document.getElementById('reset-setup-btn').addEventListener('click', () => {
-    if (!confirm('Reset Supabase configuration? You will need to re-enter your credentials.')) return;
+    if (!confirm('Reset Supabase configuration?')) return;
     resetConfig();
     location.reload();
   });
 
-  // Logout
   document.getElementById('logout-btn').addEventListener('click', async () => {
     await logout();
     showScreen('login-screen');
   });
 
-  // Search
   document.getElementById('search-input').addEventListener('input', (e) => {
     searchKeyword = e.target.value;
     renderPromptList();
   });
 
-  // New prompt
   document.getElementById('new-prompt-btn').addEventListener('click', () => showForm());
   document.getElementById('new-prompt-btn-empty').addEventListener('click', () => showForm());
 
-  // Detail actions
   document.getElementById('copy-btn').addEventListener('click', handleCopy);
   document.getElementById('edit-btn').addEventListener('click', () => showForm(selectedPrompt));
   document.getElementById('duplicate-btn').addEventListener('click', handleDuplicate);
   document.getElementById('delete-btn').addEventListener('click', handleDelete);
 
-  // Form actions
   document.getElementById('save-btn').addEventListener('click', handleSave);
   document.getElementById('cancel-btn').addEventListener('click', () => {
-    if (selectedPrompt) showDetail();
-    else showEmptyState();
+    if (selectedPrompt) showDetail(); else showEmptyState();
   });
 
-  // Assembly overlay
   document.getElementById('overlay-close').addEventListener('click', closeAssembly);
   document.getElementById('overlay-copy-btn').addEventListener('click', copyAssembly);
   document.getElementById('assembly-overlay').addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeAssembly();
   });
 
-  // Tags modal
   document.getElementById('tags-btn').addEventListener('click', openTagsModal);
   document.getElementById('tags-modal-close').addEventListener('click', closeTagsModal);
   document.getElementById('tags-modal').addEventListener('click', (e) => {
@@ -505,7 +477,6 @@ function wireEvents() {
     if (e.key === 'Enter') document.getElementById('add-tag-btn').click();
   });
 
-  // Affix drawer toggle
   document.getElementById('affix-toggle').addEventListener('click', () => {
     const body = document.getElementById('affix-drawer-body');
     body.classList.toggle('hidden');
@@ -513,7 +484,6 @@ function wireEvents() {
       body.classList.contains('hidden') ? '▾' : '▴';
   });
 
-  // Affix modal
   document.getElementById('new-affix-btn').addEventListener('click', () => openAffixModal());
   document.getElementById('affix-modal-close').addEventListener('click', closeAffixModal);
   document.getElementById('affix-cancel-btn').addEventListener('click', closeAffixModal);
@@ -522,7 +492,6 @@ function wireEvents() {
     if (e.target === e.currentTarget) closeAffixModal();
   });
 
-  // Global keyboard
   document.addEventListener('keydown', (e) => {
     const assemblyOpen = !document.getElementById('assembly-overlay').classList.contains('hidden');
 
@@ -535,16 +504,14 @@ function wireEvents() {
     }
 
     if (e.key === 'Escape') {
-      if (!document.getElementById('tags-modal').classList.contains('hidden')) { closeTagsModal(); return; }
+      if (!document.getElementById('tags-modal').classList.contains('hidden'))  { closeTagsModal(); return; }
       if (!document.getElementById('affix-modal').classList.contains('hidden')) { closeAffixModal(); return; }
       if (!document.getElementById('prompt-form').classList.contains('hidden')) {
         if (selectedPrompt) showDetail(); else showEmptyState();
-        return;
       }
     }
   });
 
-  // Auth state change (session expiry)
   onAuthStateChange((event) => {
     if (event === 'SIGNED_OUT') showScreen('login-screen');
   });
