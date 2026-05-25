@@ -225,6 +225,22 @@
   <script src="js/affixes.js"></script>
   <script src="js/tags.js"></script>
   <script src="js/search.js"></script>
+  <!-- Confirm Dialog -->
+  <div id="confirm-modal" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="overlay-card overlay-sm">
+      <div class="overlay-header">
+        <h3 id="confirm-title"></h3>
+      </div>
+      <div class="overlay-body">
+        <p id="confirm-message" class="confirm-message"></p>
+      </div>
+      <div class="overlay-footer" style="gap:.5rem">
+        <button id="confirm-cancel-btn" class="btn-secondary">Cancel</button>
+        <button id="confirm-ok-btn" class="btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/variables.js"></script>
   <script src="js/assembly.js"></script>
   <script src="js/ui.js"></script>

@@ -221,6 +221,35 @@ function showEmptyState() {
   document.getElementById('prompt-form').classList.add('hidden');
 }
 
+// ── Confirm Dialog ─────────────────────────────────────
+
+function showConfirm(title, message, okLabel = 'Confirm') {
+  return new Promise(resolve => {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').textContent = message;
+    document.getElementById('confirm-ok-btn').textContent = okLabel;
+
+    const modal = document.getElementById('confirm-modal');
+    modal.classList.remove('hidden');
+    document.getElementById('confirm-cancel-btn').focus();
+
+    function finish(result) {
+      modal.classList.add('hidden');
+      document.removeEventListener('keydown', onKey);
+      resolve(result);
+    }
+
+    function onKey(e) {
+      if (e.key === 'Escape') finish(false);
+      if (e.key === 'Enter') { e.preventDefault(); finish(true); }
+    }
+
+    document.getElementById('confirm-ok-btn').onclick = () => finish(true);
+    document.getElementById('confirm-cancel-btn').onclick = () => finish(false);
+    document.addEventListener('keydown', onKey);
+  });
+}
+
 // ── Tag Filter ─────────────────────────────────────────
 
 function toggleTagFilter(tagId) {
@@ -260,7 +289,7 @@ async function handleSave() {
 
 async function handleDelete() {
   if (!selectedPrompt) return;
-  if (!confirm(`Delete "${selectedPrompt.title}"?`)) return;
+  if (!await showConfirm('Delete Prompt', `Delete "${selectedPrompt.title}"?`, 'Delete')) return;
   try {
     await deletePrompt(selectedPrompt.id);
     selectedPrompt = null;
@@ -352,7 +381,7 @@ function renderTagsModal() {
     delBtn.textContent = 'Delete';
     delBtn.className = 'btn-xs btn-xs-danger';
     delBtn.addEventListener('click', async () => {
-      if (!confirm(`Delete tag "${t.name}"? It will be removed from all prompts.`)) return;
+      if (!await showConfirm('Delete Tag', `Delete "${t.name}"? It will be removed from all prompts.`, 'Delete')) return;
       await deleteTag(t.id);
       selectedTagIds.delete(t.id);
       await Promise.all([loadTags(), loadPrompts()]);
@@ -409,7 +438,7 @@ async function handleSaveAffix() {
 }
 
 async function handleDeleteAffix(affix) {
-  if (!confirm(`Delete affix "${affix.name}"?`)) return;
+  if (!await showConfirm('Delete Affix', `Delete "${affix.name}"?`, 'Delete')) return;
   try {
     await deleteAffix(affix.id);
     await loadAffixes();
@@ -444,8 +473,8 @@ function wireEvents() {
     }
   });
 
-  document.getElementById('reset-setup-btn').addEventListener('click', () => {
-    if (!confirm('Reset Supabase configuration?')) return;
+  document.getElementById('reset-setup-btn').addEventListener('click', async () => {
+    if (!await showConfirm('Reset Setup', 'Reset Supabase configuration? You will need to re-enter your credentials.', 'Reset')) return;
     resetConfig();
     location.reload();
   });
