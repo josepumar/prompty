@@ -14,7 +14,7 @@ async function logout() {
 }
 
 function onAuthStateChange(callback) {
-  getSupabase().auth.onAuthStateChange((event, session) => {
-    callback(event, session);
-  });
+  const sb = getSupabase();
+  if (!sb) return;
+  sb.auth.onAuthStateChange((event, session) => callback(event, session));
 }

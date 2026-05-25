@@ -32,6 +32,9 @@ async function afterSetup() {
 async function loadApp() {
   showScreen('app-shell');
   await Promise.all([loadPrompts(), loadAffixes(), loadTags()]);
+  onAuthStateChange((event) => {
+    if (event === 'SIGNED_OUT') showScreen('login-screen');
+  });
   renderAll();
   showEmptyState();
 }
@@ -512,9 +515,6 @@ function wireEvents() {
     }
   });
 
-  onAuthStateChange((event) => {
-    if (event === 'SIGNED_OUT') showScreen('login-screen');
-  });
 }
 
 // ── Init ───────────────────────────────────────────────
