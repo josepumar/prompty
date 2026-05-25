@@ -48,7 +48,7 @@ async function deletePrompt(id) {
 async function duplicatePrompt(prompt) {
   const sb = getSupabase();
 
-  const m = prompt.title.match(/^(.*?)\s*##(\d+)(?:\.\d+)?$/);
+  const m = prompt.title.match(/^(.*?)\s*-(\d+)(?:\.\d+)?$/);
   let base, nn;
   if (m) {
     base = m[1];
@@ -58,7 +58,7 @@ async function duplicatePrompt(prompt) {
     nn = 1;
   }
 
-  let candidate = `${base} ##${String(nn).padStart(2, '0')}`;
+  let candidate = `${base} -${String(nn).padStart(2, '0')}`;
 
   const { data: exists } = await sb
     .from('prompts').select('id').eq('title', candidate).maybeSingle();
