@@ -178,12 +178,14 @@ function renderAffixDrawer() {
       });
 
       const editBtn = document.createElement('button');
-      editBtn.textContent = 'Edit';
+      editBtn.textContent = '✎';
+      editBtn.title = 'Edit';
       editBtn.className = 'btn-xs';
       editBtn.addEventListener('click', () => openAffixModal(a));
 
       const delBtn = document.createElement('button');
-      delBtn.textContent = 'Del';
+      delBtn.textContent = '🗑';
+      delBtn.title = 'Delete';
       delBtn.className = 'btn-xs btn-xs-danger';
       delBtn.addEventListener('click', () => handleDeleteAffix(a));
 
