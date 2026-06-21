@@ -157,6 +157,26 @@ function renderAffixDrawer() {
       const actions = document.createElement('div');
       actions.className = 'affix-row-actions';
 
+      const copyBtn = document.createElement('button');
+      copyBtn.textContent = '⎘';
+      copyBtn.className = 'btn-xs';
+      copyBtn.title = 'Copy body';
+      copyBtn.disabled = !a.body?.trim();
+      copyBtn.addEventListener('click', () => {
+        const text = a.body;
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+        } else {
+          fallbackCopy(text);
+        }
+        copyBtn.textContent = '✓';
+        copyBtn.classList.add('copied');
+        setTimeout(() => {
+          copyBtn.textContent = '⎘';
+          copyBtn.classList.remove('copied');
+        }, 1200);
+      });
+
       const editBtn = document.createElement('button');
       editBtn.textContent = 'Edit';
       editBtn.className = 'btn-xs';
@@ -167,6 +187,7 @@ function renderAffixDrawer() {
       delBtn.className = 'btn-xs btn-xs-danger';
       delBtn.addEventListener('click', () => handleDeleteAffix(a));
 
+      actions.appendChild(copyBtn);
       actions.appendChild(editBtn);
       actions.appendChild(delBtn);
       row.appendChild(left);
